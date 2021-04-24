@@ -113,12 +113,57 @@ class Review(models.Model):
         return self.username
 
 
+# class Cart(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+#     total = models.PositiveIntegerField(default=0)
+#     checkout = models.CharField(default=False, max_length=50)
+#     created_at = models.DateTimeField(default=timezone.now)
+#
+#     def __str__(self):
+#         return "Carts: " + str(self.id)
+#
+#
+# class CartProduct(models.Model):
+#     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE)
+#     quantity = models.PositiveIntegerField()
+#     subtotal = models.PositiveIntegerField()
+#
+#     def __str__(self):
+#         return "CartProduct: " + str(self.id)
+#
+#
+# ORDER_STATUS = (
+#     ('order Received', 'order Received'),
+#     ('order Processing', 'order Processing'),
+#     ('On the Way', 'On the Way'),
+#     ('Order Completed', 'Order Completed'),
+#     ('Order Canceled', 'Order Canceled'),
+# )
+#
+#
+# class Order(models.Model):
+#     cart = models.OneToOneField(Cart, on_delete=models.CASCADE, default=None)
+#     first_name = models.CharField(max_length=50)
+#     last_name = models.CharField(max_length=50)
+#     ordered_by = models.CharField(max_length=200)
+#     shipping_address = models.CharField(max_length=200)
+#     mobile_no = models.CharField(max_length=15)
+#     email = models.EmailField()
+#     subtotal = models.PositiveIntegerField()
+#     total = models.PositiveIntegerField()
+#     order_status = models.CharField(max_length=50, choices=ORDER_STATUS)
+#     created_at = models.DateTimeField(default=timezone.now)
+#
+#     def __str__(self):
+#         return self.first_name
+
 class Cart(models.Model):
     username = models.CharField(max_length=200, default=None)
-    products = models.ForeignKey(Product, on_delete=models.CASCADE)
-    slug = models.CharField(max_length=100)
-    quantity = models.IntegerField()
-    total = models.IntegerField()
+    products = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
+    slug = models.CharField(max_length=100, default=None)
+    quantity = models.IntegerField(default=0)
+    total = models.IntegerField(default=0)
     checkout = models.BooleanField(default=False)
     status = models.CharField(max_length=100, choices=STATUS, default='active')
 
@@ -139,15 +184,16 @@ class CartTotal(models.Model):
         return self.username
 
 
-class Checkout(models.Model):
-    username = models.CharField(max_length=200, default=None)
+class CheckoutCart(models.Model):
     first_name = models.CharField(max_length=200, default=None)
     last_name = models.CharField(max_length=200, default=None)
+    username = models.CharField(max_length=200, null=True)
     email = models.EmailField()
     shipping_add = models.CharField(max_length=200)
     mobile_no = models.IntegerField()
+    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True)
     products = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
-    checkout = models.BooleanField(default=True)
+    zip_code = models.CharField(max_length=20, default=None)
     date_checked = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

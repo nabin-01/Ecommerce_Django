@@ -20,35 +20,58 @@
                 <div class="row">
                     <div class="col-lg-8">
                         <div class="checkout-inner">
-                            <div class="checkout-summary">
-                                <h2> Items in the Cart</h2>
-                                <table class="table">
+                            <div class="cart-page-inner">
+                            <div class="table-responsive">
+                                <table class="table table-bordered">
                                     <thead>
-                                    <tr>
-                                        <th>SN</th>
-                                        <th>Product</th>
-                                        <th>Rate</th>
-                                        <th>Quantity</th>
-                                        <th>total</th>
-                                    </tr>
+                                        <tr>
+                                            <th>SN</th>
+                                            <th>Product</th>
+                                            <th>Price</th>
+                                            <th>Quantity</th>
+                                            <th>Total</th>
+                                        </tr>
                                     </thead>
-                                    <tbody>
-                                    {% for cp in cart_product %}
-                                    <tr>
-                                        <td>{{forloop.counter}}</td>
-                                        <td>{{cp.products.name}}</td>
-                                        {% if cp.discounted_price > 0 %}
-                                        <td>{{cp.products.discounted_price}}</td>
-                                        {% else %}
-                                        <td>{{cp.products.price}}</td>
-                                        {% endif %}
-                                        <td>{{cp.quantity}}</td>
-                                        <td>{{cp.total}}</td>
-                                    </tr>
+                                    <tbody class="align-middle">
+                                    {% for item in cart_product %}
+                                        <tr>
+                                            <td>
+                                                {{forloop.counter}}
+                                            </td>
+                                            <td>
+                                                <div class="img">
+                                                    <a href="#"><img src="{{item.products.image.url}}" style="height:40px;" alt="Image"></a>
+                                                    <span><b>{{item.products.name}}</b></span>
+                                                </div>
+                                            </td>
+                                            {% if item.products.discount > 0 %}
+                                                <td>Rs.{{item.products.discounted_price}}</td>
+                                            {% else %}
+                                                <td>Rs.{{item.products.price}}</td>
+                                            {% endif %}
+                                            <td>
+                                                {{item.quantity}}
+                                            </td>
+
+                                            <td>
+                                            Rs.{{ item.total }}
+                                            </td>
+                                        </tr>
                                     {% endfor %}
                                     </tbody>
                                 </table>
+                                <hr>
+                                        <div class style="text-align:right;">
+                                            {% for i in cart_total%}
+                                            <p>Net Total - <span>Rs. {{ i.net_total}}</span></p>
+                                            <hr>
+                                            <p>Shipping Cost - <span>Rs. {{ i.shipping_cost }}</span></p>
+                                            <hr>
+                                            <p><b>Grand Total</b> - <span><b>Rs. {{ i.grand_total }}</b></span></p>
+                                            {% endfor %}
+                                        </div>
                             </div>
+                        </div>
 
                             <div class="checkout-payment">
                                 <div class="payment-methods">
@@ -109,52 +132,52 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="checkout-btn">
-                                    <button>Place Order</button>
-                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 ">
+                    <div class="col-lg-4">
                         <div class="checkout-inner">
-                            <div class="shipping-address">
-                                <h2>Shipping Address</h2>
-                                <form method="POST">
+                            <form method="POST">
                                 {% csrf_token %}
+                            <div class="billing-address">
+                                <h2>Shipping Address</h2>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label>First Name</label>
-                                        <input name = 'fname' class="form-control" type="text" placeholder="First Name">
+                                        <input name = "first_name" class="form-control" type="text" placeholder="First Name">
                                     </div>
                                     <div class="col-md-6">
                                         <label>Last Name</label>
-                                        <input name = 'lname' class="form-control" type="text" placeholder="Last Name">
+                                        <input name="last_name" class="form-control" type="text" placeholder="Last Name">
                                     </div>
-                                    <div class="col-md-12">
-                                        <label>Last Name</label>
-                                        <input name = 'email' class="form-control" type="email" placeholder="Email address">
-                                    </div>
-                                    <div class="col-md-12">
-                                        <label>Shipping Address</label>
-                                        <input name="shipping_add" class="form-control" type="text" placeholder="Full shipping Address">
+                                    <div class="col-md-6">
+                                        <label>E-mail</label>
+                                        <input name="email" class="form-control" type="text" placeholder="E-mail">
                                     </div>
                                     <div class="col-md-6">
                                         <label>Mobile No</label>
-                                        <input name="mobile_no" class="form-control" type="number" placeholder="Mobile No">
+                                        <input name="mobile_no" class="form-control" type="text" placeholder="Mobile No">
+                                    </div>
+                                    <div class="col-md-12">
+                                        <label>Shipping Address</label>
+                                        <input name="shipping_add" class="form-control" type="text" placeholder="Shipping Address">
                                     </div>
                                     <div class="col-md-6">
                                         <label>ZIP Code</label>
-                                        <input class="form-control" type="number" placeholder="ZIP Code">
+                                        <input name="zip_code" class="form-control" type="text" placeholder="ZIP Code">
                                     </div>
                                     <div class="col-md-12">
                                         <div class="custom-control custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="newaccount">
-                                            <label class="custom-control-label" for="newaccount">Create an account</label>
+                                            <label class="custom-control-label" for="newaccount">Confirm Checkout</label>
                                         </div>
                                     </div>
                                 </div>
-                                </form>
+                                 <div class="checkout-btn">
+                                    <a href="{% url 'myapp:home' %}"><button class="btn btn-info" type="submit">Place Your Order</button></a>
+                                </div>
                             </div>
+                            </form>
                         </div>
                     </div>
                 </div>

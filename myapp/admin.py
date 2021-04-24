@@ -11,4 +11,7 @@ admin.site.register(SiteReview)
 admin.site.register(Review)
 admin.site.register(Cart)
 admin.site.register(CartTotal)
-admin.site.register(Checkout)
+admin.site.register(CheckoutCart)
+
+# admin.site.register([Category, Slider, Ad, Brand, Product, Product,
+# Contact, SiteReview, Review, Cart, CartProduct, Order])
