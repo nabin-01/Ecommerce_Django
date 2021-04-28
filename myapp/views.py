@@ -30,13 +30,13 @@ class BaseView(View):
 
 class HomeView(BaseView):
     def get(self, request):
+        user = request.user.username
         self.views['ads'] = Ad.objects.filter(status='active')
         self.views['hots'] = Product.objects.filter(label='hot', status='active')
         self.views['news'] = Product.objects.filter(label='new', status='active')
         self.views['most_viewed'] = Product.objects.filter(label='most_viewed', status='active')
         self.views['defaults'] = Product.objects.filter(label='', status='passive')
         self.views['site_reviews'] = SiteReview.objects.filter(status='active')
-
         return render(request, 'index.html', self.views)
 
 
@@ -84,8 +84,8 @@ def contact(request):
         else:
             send_email = EmailMessage(
                 'contact from your website',
-                f'Hello admin, {name} is trying to contact you. His email is {email}. He want to talk about {subject}.'
-                f'His message is {message}.',
+                f'Hello, the contact of {name} is saved, the email is {email}. and the contact has the subject named "{subject}".'
+                f' The message is {message}.',
                 settings.EMAIL_HOST_USER,
                 ['nabinghimire1001@gmail.com'],
                 # [request.user.email],
@@ -100,6 +100,7 @@ def contact(request):
 
 
 def signup(request):
+    Cart.objects.all().delete()
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
@@ -212,9 +213,14 @@ def cart(request, slug):
             grand_total=grand_total,
             cart=Cart.objects.filter(slug=slug)[0]
         )
-        data.save()
-        data1.save()
-        messages.success(request, f'✔️The item "{slug}" is added in cart!')
+        if request.user.is_authenticated:
+            data.save()
+            data1.save()
+            messages.success(request, f'✔️The item "{slug}" is added in cart!')
+        else:
+            messages.error(request, 'please Sign Up first!')
+            return redirect('myapp:account')
+
         CartTotal.objects.filter(username=user, checkout=False).update(net_total=net_total, shipping_cost=shipping_cost, grand_total=grand_total)
         return redirect('myapp:my_cart')
 
@@ -225,14 +231,18 @@ class CartView(BaseView):
         net_total = 0
         shipping_cost = 1000
         grand_total = 0
-        self.views['cart_product'] = Cart.objects.filter(username=user, checkout=False, status='active')
-        tots = CartTotal.objects.filter(username=user, checkout=False)
-        for i in tots[:]:
-            net_total = i.net_total
-            shipping_cost = i.shipping_cost
-            grand_total = i.grand_total
-        self.views['cart_total'] = [{'net_total': net_total, 'shipping_cost': shipping_cost, 'grand_total': grand_total}]
-        self.views['cart_count'] = Cart.objects.filter(username=user, status='active', checkout=False).count()
+        if request.user.is_authenticated:
+            self.views['cart_product'] = Cart.objects.filter(username=user, checkout=False, status='active')
+            tots = CartTotal.objects.filter(username=user, checkout=False)
+            for i in tots[:]:
+                net_total = i.net_total
+                shipping_cost = i.shipping_cost
+                grand_total = i.grand_total
+            self.views['cart_total'] = [{'net_total': net_total, 'shipping_cost': shipping_cost, 'grand_total': grand_total}]
+            self.views['cart_count'] = Cart.objects.filter(username=user, status='active', checkout=False).count()
+        else:
+            messages.error(request, 'please Sign up first!')
+            return redirect('myapp:account')
         return render(request, 'cart.html', self.views)
 
 
@@ -257,16 +267,6 @@ def delete_cart(request, slug):
         CartTotal.objects.filter(username=user, checkout=False).update(net_total=net_total, grand_total=grand_total,
                                                                        shipping_cost=shipping_cost)
 
-        # for j in b[:]:
-        #     t = j.total
-        # for i in tots[:]:
-        #     net_total = i.net_total
-        #     shipping_cost = i.shipping_cost
-        #     grand_total = i.grand_total
-        #     net_total = net_total - t
-        #     grand_total = net_total + shipping_cost
-        #     CartTotal.objects.filter(username=user, checkout=False).update(net_total=net_total,
-        #     grand_total=grand_total,shipping_cost=shipping_cost)
         if Cart.objects.count() == 0:
             messages.info(request, 'You have 0 items in the Cart!')
             net_total = net_total
@@ -275,13 +275,6 @@ def delete_cart(request, slug):
             CartTotal.objects.filter(username=user, checkout=False).update(net_total=net_total, grand_total=grand_total,
                                                                            shipping_cost=shipping_cost)
             return redirect('myapp:my_cart')
-        # else:
-        #     for i in b[0:]:
-        #         net = a[0:].net_total - i.total
-        #         grand = net + shipping_cost
-        #         CartTotal.objects.filter(username=user, checkout=False).update(net_total=net,
-        #         shipping_cost=shipping_cost, grand_total=grand)
-
     return redirect('myapp:my_cart')
 
 
@@ -311,41 +304,43 @@ def delete_single_cart(request, slug):
     return redirect('myapp:my_cart')
 
 
-def checkout(request):
-    template = render_to_string('email_template.html', {'name': request.user.profile.first_name})
-    if request.method == 'POST':
-        username = request.user.username
-        fname = request.POST['fname']
-        lname = request.POST['lname']
-        email = request.POST['email']
-        shipping_add = request.POST['shipping_add']
-        mobile_no = request.POST['mobile_no']
-        zip_code = request.POST['zip_code']
-        if Cart.objects.filter(checkout=False, status='active'):
+class CheckoutView(BaseView):
+    def post(self, request):
+        template = render_to_string('email/email_template.html', {'name': request.user.username})
+        if request.method == 'POST':
+            username = request.user.username
+            first_name = request.POST['first_name']
+            last_name = request.POST['last_name']
+            email = request.POST['email']
+            shipping_add = request.POST['shipping_add']
+            mobile_no = request.POST['mobile_no']
+            zip_code = request.POST['zip_code']
             data = CheckoutCart.objects.create(
                 username=username,
-                first_name=fname,
-                last_name=lname,
+                first_name=first_name,
+                last_name=last_name,
                 email=email,
-                billing_add=shipping_add,
+                shipping_add=shipping_add,
                 mobile_no=mobile_no,
                 zip_code=zip_code,
             )
+            data.save()
             send_email = EmailMessage(
                 'Checkout completed',
                 template,
                 settings.EMAIL_HOST_USER,
                 ['nabinghimire1001@gmail.com'],
-                [request.user.email],
+                # [request.user.email],
+                [email],
             )
             send_email.fail_silently = False
             send_email.send()
-            data.save()
-            return redirect("/", kwargs={'messages': messages.success(
-                request, '✔ Checkout is done! Check ur email to confirm!')})
+            Cart.objects.all().delete()
+            CartTotal.objects.all().delete()
+            CheckoutCart.objects.all().delete()
+            messages.success(request, '✔ Checkout is done! Check your email to confirm!')
+            return redirect("/")
 
-
-class CheckoutView(BaseView):
     def get(self, request):
         user = request.user.username
         net_total = 0
@@ -357,37 +352,10 @@ class CheckoutView(BaseView):
             net_total = i.net_total
             shipping_cost = i.shipping_cost
             grand_total = i.grand_total
+            date_checked = i.date_checked
         self.views['cart_total'] = [
-            {'net_total': net_total, 'shipping_cost': shipping_cost, 'grand_total': grand_total}]
+            {'net_total': net_total, 'shipping_cost': shipping_cost, 'grand_total': grand_total, 'date_checked': date_checked}]
         return render(request, 'checkout.html', self.views)
-
-# def totals(request, slug):
-#     user = request.user.username
-#     shipping_cost = 1000
-#     net_tot = 0
-#     net_total = CartTotal.objects.filter(username=user, checkout=False)
-#     for i in net_total[0:]:
-#         net_tot += i.net_total
-#     grand_total = net_tot + shipping_cost
-#     CartTotal.objects.filter(username=user, slug=slug, checkout=False).update(
-#         net_total=net_tot, shipping_cost=shipping_cost, grand_total=grand_total)
-#
-#     total = CartTotal.objects.filter(username=user, slug=slug, checkout=False)
-#     for i in total[0:]:
-#         net_total = i.net_total
-#         grand_total = i.grand_total
-#     context = {'net_tots': net_total, 'shipping_cost': shipping_cost, 'grand_tots': grand_total}
-#     return redirect('myapp:my_cart', context)
-
-
-# def totals(request, slug):
-#
-#     a = Cart.objects.filter(username=user, slug=slug, checkout=False)
-#     for i in a:
-#         net_total += i['total']
-#     grand_total = 1000+net_total
-#     # context = {'net_total': net_total, 'grand_total': grand_total}
-#     return redirect('myapp:my_cart', kwargs={'net_total': net_total, 'grand_total': grand_total})
 
 
 # ------------------------API--------------------------

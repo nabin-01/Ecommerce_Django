@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.shortcuts import reverse
 from django.utils import timezone
+
 STATUS = (('active', 'active'), ('passive', 'passive'))
 PRODUCT_LABEL = (('hot', 'hot'), ('new', 'new'), ('most_viewed', 'most_viewed'), ('', 'default'))
 
@@ -174,11 +175,12 @@ class Cart(models.Model):
 class CartTotal(models.Model):
     username = models.CharField(max_length=200, default=None)
     net_total = models.IntegerField(default=0)
-    cart = models.ForeignKey(Cart, on_delete=models.CASCADE, default=None)
     slug = models.CharField(max_length=100, unique=True, default=None)
     shipping_cost = models.IntegerField(default=0)
     grand_total = models.IntegerField(default=0)
     checkout = models.BooleanField(default=False)
+    cart=models.ForeignKey(Cart, on_delete=models.CASCADE, null=True)
+    date_checked = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return self.username
@@ -192,9 +194,7 @@ class CheckoutCart(models.Model):
     shipping_add = models.CharField(max_length=200)
     mobile_no = models.IntegerField()
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, null=True)
-    products = models.ForeignKey(Product, on_delete=models.CASCADE, default=None)
-    zip_code = models.CharField(max_length=20, default=None)
-    date_checked = models.DateTimeField(default=timezone.now)
+    zip_code = models.IntegerField()
 
     def __str__(self):
         return self.first_name

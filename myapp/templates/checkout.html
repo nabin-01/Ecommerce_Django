@@ -13,7 +13,13 @@
             </div>
         </div>
         <!-- Breadcrumb End -->
-        
+        {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" role="alert">
+          <center><strong>Message: </strong>{{ message }}</center>
+        </div>
+        {% endfor %}
+        {% endif %}
         <!-- Checkout Start -->
         <div class="checkout">
             <div class="container-fluid"> 
@@ -22,10 +28,13 @@
                         <div class="checkout-inner">
                             <div class="cart-page-inner">
                             <div class="table-responsive">
+                                {% for date in cart_total %}
+                                    <div class='mb-3' style="text-align:right;"><b>Date</b>: {{date.date_checked|date:"d F, Y"}}</div>
+                                {% endfor %}
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>SN</th>
+                                            <th>S.N</th>
                                             <th>Product</th>
                                             <th>Price</th>
                                             <th>Quantity</th>
@@ -36,7 +45,7 @@
                                     {% for item in cart_product %}
                                         <tr>
                                             <td>
-                                                {{forloop.counter}}
+                                                {{forloop.counter}}.
                                             </td>
                                             <td>
                                                 <div class="img">
@@ -137,14 +146,14 @@
                     </div>
                     <div class="col-lg-4">
                         <div class="checkout-inner">
-                            <form method="POST">
-                                {% csrf_token %}
                             <div class="billing-address">
                                 <h2>Shipping Address</h2>
+                                <form method="POST">
+                                {% csrf_token %}
                                 <div class="row">
                                     <div class="col-md-6">
                                         <label>First Name</label>
-                                        <input name = "first_name" class="form-control" type="text" placeholder="First Name">
+                                        <input name ="first_name" class="form-control" type="text" placeholder="First Name">
                                     </div>
                                     <div class="col-md-6">
                                         <label>Last Name</label>
@@ -152,11 +161,11 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label>E-mail</label>
-                                        <input name="email" class="form-control" type="text" placeholder="E-mail">
+                                        <input name="email" class="form-control" type="email" placeholder="E-mail">
                                     </div>
                                     <div class="col-md-6">
                                         <label>Mobile No</label>
-                                        <input name="mobile_no" class="form-control" type="text" placeholder="Mobile No">
+                                        <input name="mobile_no" class="form-control" type="number" placeholder="Mobile No">
                                     </div>
                                     <div class="col-md-12">
                                         <label>Shipping Address</label>
@@ -164,20 +173,12 @@
                                     </div>
                                     <div class="col-md-6">
                                         <label>ZIP Code</label>
-                                        <input name="zip_code" class="form-control" type="text" placeholder="ZIP Code">
+                                        <input name="zip_code" class="form-control" type="number" placeholder="ZIP Code">
                                     </div>
-                                    <div class="col-md-12">
-                                        <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="newaccount">
-                                            <label class="custom-control-label" for="newaccount">Confirm Checkout</label>
-                                        </div>
-                                    </div>
+                                    <div class="col-md-12"><a href="/"><button class="btn" type="submit">Place your order</button></a></div>
                                 </div>
-                                 <div class="checkout-btn">
-                                    <a href="{% url 'myapp:home' %}"><button class="btn btn-info" type="submit">Place Your Order</button></a>
-                                </div>
+                                </form>
                             </div>
-                            </form>
                         </div>
                     </div>
                 </div>

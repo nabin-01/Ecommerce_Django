@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 import os
+from decouple import config
 from pathlib import Path
 from django.contrib.messages import constants as messages
 
@@ -21,7 +22,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(j@_#&4f3%87k%prbk43xfxg++zq3lr^g#6q14y6y=x#btmq0v'
+SECRET_KEY = config('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     'myapp',
     'rest_framework',
     'django_filters',
-
 ]
 
 MIDDLEWARE = [
@@ -111,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Kathmandu'
 
 USE_I18N = True
 
@@ -139,8 +139,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'gnabin821@gmail.com'
-EMAIL_HOST_PASSWORD = 'Furious@888'
+EMAIL_HOST_USER = 'bram87693@gmail.com'
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 # use_ssl: EMAIL_USE_SSL
 # timeout: EMAIL_TIMEOUT
 # ssl_keyfile: EMAIL_SSL_KEYFILE
